@@ -12,28 +12,38 @@ function App() {
   const [userEmail, setUserEmail] = useState('');
   const location = useLocation();
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await axios.get(`${import.meta.env.VITE_API_BASE}/api/auth/verify`, {
+ useEffect(() => {
+  const checkAuth = async () => {
+    try {
+      console.log('Attempting to verify authentication...');
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_BASE}/api/auth/verify`, 
+        {
           withCredentials: true,
           headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
           }
-        });
-        setIsAuthenticated(response.data.success);
-        if (response.data.user) {
-          setUserEmail(response.data.user.email);
         }
-      } catch (err) {
-        console.error("Auth verification error:", err);
-        setIsAuthenticated(false);
-        setUserEmail('');
+      );
+      
+      console.log('Auth verification response:', response.data);
+      setIsAuthenticated(response.data.success);
+      if (response.data.user) {
+        setUserEmail(response.data.user.email);
       }
-    };
-    checkAuth();
-  }, [location.pathname]);
+    } catch (err) {
+      console.error("Auth verification error details:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status
+      });
+      setIsAuthenticated(false);
+      setUserEmail('');
+    }
+  };
+  checkAuth();
+}, [location.pathname]);
 
   return (
     <Routes>
