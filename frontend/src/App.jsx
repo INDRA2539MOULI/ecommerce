@@ -16,13 +16,18 @@ function App() {
     const checkAuth = async () => {
       try {
         const response = await axios.get(`${import.meta.env.VITE_API_BASE}/api/auth/verify`, {
-          withCredentials: true
+          withCredentials: true,
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
         });
         setIsAuthenticated(response.data.success);
         if (response.data.user) {
           setUserEmail(response.data.user.email);
         }
       } catch (err) {
+        console.error("Auth verification error:", err);
         setIsAuthenticated(false);
         setUserEmail('');
       }
