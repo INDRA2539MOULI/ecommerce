@@ -79,15 +79,15 @@ app.post("/signup", async (req, res) => {
     });
 
     const token = jwt.sign({ userId: newUser._id }, SECRET, { expiresIn: TOKEN_EXPIRY });
-    
-    res.cookie('token', token, { 
+
+    res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: COOKIE_EXPIRY,
       path: '/'
     });
-    
+
     res.status(201).json({
       success: true,
       msg: "Account created successfully!",
@@ -118,15 +118,15 @@ app.post("/login", async (req, res) => {
     }
 
     const token = jwt.sign({ userId: user._id }, SECRET, { expiresIn: TOKEN_EXPIRY });
-    
-    res.cookie('token', token, { 
+
+    res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: COOKIE_EXPIRY,
       path: '/'
     });
-    
+
     res.json({
       success: true,
       msg: "Logged in successfully!",
@@ -144,7 +144,7 @@ app.get("/api/auth/verify", verifyToken, async (req, res) => {
     if (!user) {
       return res.status(401).json({ success: false });
     }
-    res.json({ 
+    res.json({
       success: true,
       user: {
         email: user.Email
@@ -171,7 +171,7 @@ app.get("/api/products", async (req, res) => {
   try {
     const { category, limit = 10 } = req.query;
     let url = 'https://dummyjson.com/products';
-    
+
     if (category) {
       url = `https://dummyjson.com/products/category/${category}`;
     } else {
@@ -186,9 +186,14 @@ app.get("/api/products", async (req, res) => {
   }
 });
 
-app.get("/api/products/:id(\\d+)", async (req, res) => {
+app.get("/api/products/:id", async (req, res) => {
+  const id = Number(req.params.id);
+  if (isNaN(id)) {
+    return res.status(400).json({ success: false, msg: "Invalid product ID" });
+  }
+
   try {
-    const response = await axios.get(`https://dummyjson.com/products/${req.params.id}`);
+    const response = await axios.get(`https://dummyjson.com/products/${id}`);
     res.json(response.data);
   } catch (err) {
     console.error("Product fetch error:", err);
@@ -211,7 +216,7 @@ app.post("/api/cart", verifyToken, async (req, res) => {
   try {
     const { productId, title, price, thumbnail } = req.body;
     let cart = await CartModel.findOne({ user: req.userId });
-    
+
     if (!cart) {
       cart = new CartModel({
         user: req.userId,
@@ -220,7 +225,7 @@ app.post("/api/cart", verifyToken, async (req, res) => {
     }
 
     const existingItem = cart.items.find(item => item.productId === productId);
-    
+
     if (existingItem) {
       existingItem.quantity += 1;
     } else {
@@ -241,12 +246,16 @@ app.post("/api/cart", verifyToken, async (req, res) => {
   }
 });
 
-app.put("/api/cart/:productId(\\d+)", verifyToken, async (req, res) => {
+app.put("/api/cart/:productId", verifyToken, async (req, res) => {
+  const productId = Number(req.params.productId);
+  if (isNaN(productId)) {
+    return res.status(400).json({ success: false, msg: "Invalid product ID" });
+  }
+
   try {
     const { quantity } = req.body;
     const cart = await CartModel.findOne({ user: req.userId });
-    const productId = Number(req.params.productId);
-    
+
     if (!cart) {
       return res.status(404).json({ success: false, msg: "Cart not found" });
     }
@@ -265,11 +274,15 @@ app.put("/api/cart/:productId(\\d+)", verifyToken, async (req, res) => {
   }
 });
 
-app.delete("/api/cart/:productId(\\d+)", verifyToken, async (req, res) => {
+app.delete("/api/cart/:productId", verifyToken, async (req, res) => {
+  const productId = Number(req.params.productId);
+  if (isNaN(productId)) {
+    return res.status(400).json({ success: false, msg: "Invalid product ID" });
+  }
+
   try {
     const cart = await CartModel.findOne({ user: req.userId });
-    const productId = Number(req.params.productId);
-    
+
     if (!cart) {
       return res.status(404).json({ success: false, msg: "Cart not found" });
     }
