@@ -245,7 +245,7 @@ app.put("/api/cart/:productId", verifyToken, async (req, res) => {
     }
 });
 
-app.delete("/api/cart/:productId", verifyToken, async (req, res) => {
+app.delete("/api/cart/:productId(\\d+)", verifyToken, async (req, res) => {
     try {
         const cart = await CartModel.findOne({ user: req.userId });
         
@@ -253,7 +253,7 @@ app.delete("/api/cart/:productId", verifyToken, async (req, res) => {
             return res.status(404).json({ success: false, msg: "Cart not found" });
         }
 
-        cart.items = cart.items.filter(item => item.productId !== parseInt(req.params.productId));
+       cart.items.filter(item => item.productId !== Number(req.params.productId));
         await cart.save();
         res.json({ success: true, cart });
     } catch (err) {
