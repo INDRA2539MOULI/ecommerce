@@ -14,7 +14,7 @@ app.use(cookieParser());
 
 // CORS Configuration
 const allowedOrigins = [
-  'https://ecommerce-frontend-c81y.onrender.com',
+  'https://ecommerce-frontend-c81y.onrender.com/',
   'http://localhost:5173'
 ];
 
@@ -29,7 +29,7 @@ app.use(cors({
   credentials: true,
   exposedHeaders: ["set-cookie"]
 }));
-app.options('*', cors());
+app.options('/*', cors());
 
 const SECRET = process.env.JWT_SECRET || "Mouli222";
 const TOKEN_EXPIRY = "1h";
