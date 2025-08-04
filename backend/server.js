@@ -15,11 +15,14 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-    origin: "https://ecommerce-frontend-c81y.onrender.com",
-    credentials: true,
-    exposedHeaders: ["set-cookie"]
+  origin: [
+    "https://ecommerce-frontend-c81y.onrender.com",
+    "http://localhost:3000" // For local development
+  ],
+  credentials: true,
+  exposedHeaders: ["set-cookie"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
-
 // Configuration
 const SECRET = process.env.JWT_SECRET || "Mouli222";
 const TOKEN_EXPIRY = "1h";
@@ -32,27 +35,30 @@ mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/ecommerce
 
 // Authentication Middleware
 const verifyToken = (req, res, next) => {
-    const token = req.cookies.token;
-    
-    if (!token) {
-        return res.status(401).json({ 
-            success: false, 
-            msg: "No authentication token provided" 
-        });
-    }
+  // Check both cookies and Authorization header
+  const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
+  
+  if (!token) {
+    console.log('No token found in request');
+    return res.status(401).json({ 
+      success: false, 
+      msg: "Authentication required" 
+    });
+  }
 
-    try {
-        const decoded = jwt.verify(token, SECRET);
-        req.userId = decoded.userId;
-        next();
-    } catch (err) {
-        console.error("Token verification error:", err);
-        res.clearCookie('token');
-        return res.status(401).json({ 
-            success: false, 
-            msg: "Invalid or expired token" 
-        });
-    }
+  try {
+    const decoded = jwt.verify(token, SECRET);
+    req.userId = decoded.userId;
+    console.log('Token verified successfully for user:', decoded.userId);
+    next();
+  } catch (err) {
+    console.error('Token verification failed:', err.message);
+    res.clearCookie('token');
+    return res.status(401).json({ 
+      success: false, 
+      msg: "Invalid or expired token" 
+    });
+  }
 };
 
 // Helper function to set auth cookie
