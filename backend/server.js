@@ -222,7 +222,7 @@ app.post("/api/cart", verifyToken, async (req, res) => {
     }
 });
 
-app.put("/api/cart/:productId", verifyToken, async (req, res) => {
+app.put("/api/cart/:productId(\\d+)", verifyToken, async (req, res) => {
     try {
         const { quantity } = req.body;
         const cart = await CartModel.findOne({ user: req.userId });
@@ -231,7 +231,8 @@ app.put("/api/cart/:productId", verifyToken, async (req, res) => {
             return res.status(404).json({ success: false, msg: "Cart not found" });
         }
 
-        const item = cart.items.find(item => item.productId === parseInt(req.params.productId));
+        const productId = Number(req.params.productId); // Changed to Number
+        const item = cart.items.find(item => item.productId === productId);
         if (!item) {
             return res.status(404).json({ success: false, msg: "Item not found in cart" });
         }
@@ -253,7 +254,8 @@ app.delete("/api/cart/:productId(\\d+)", verifyToken, async (req, res) => {
             return res.status(404).json({ success: false, msg: "Cart not found" });
         }
 
-       cart.items.filter(item => item.productId !== Number(req.params.productId));
+        const productId = Number(req.params.productId);
+        cart.items = cart.items.filter(item => item.productId !== productId); // Fixed assignment
         await cart.save();
         res.json({ success: true, cart });
     } catch (err) {
