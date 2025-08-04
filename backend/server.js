@@ -12,10 +12,11 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-    origin: "https://ecommerce-frontend-c81y.onrender.com/",
+    origin: "https://ecommerce-frontend-c81y.onrender.com",
     credentials: true,
     exposedHeaders: ["set-cookie"]
 }));
+app.options('*', cors());
 
 const SECRET = process.env.JWT_SECRET || "Mouli222";
 const TOKEN_EXPIRY = "1h";
