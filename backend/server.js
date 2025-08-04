@@ -63,14 +63,16 @@ const verifyToken = (req, res, next) => {
 
 // Helper function to set auth cookie
 const setAuthCookie = (res, token) => {
-    res.cookie('token', token, { 
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none',
-        maxAge: COOKIE_EXPIRY,
-        path: '/',
-        domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined
-    });
+  const isProduction = process.env.NODE_ENV === 'production';
+  
+  res.cookie('token', token, { 
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
+    maxAge: COOKIE_EXPIRY,
+    path: '/',
+    domain: isProduction ? '.onrender.com' : undefined
+  });
 };
 
 // Auth Routes
