@@ -26,7 +26,12 @@ function Login({ setIsAuthenticated, setUserEmail }) {
     try {
       const response = await axios.post(`${import.meta.env.VITE_API_BASE}/login`, 
         { Email: email, Password: password },
-        { withCredentials: true }
+        { 
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
       );
 
       if (response.data.success) {
@@ -38,6 +43,7 @@ function Login({ setIsAuthenticated, setUserEmail }) {
         setError(response.data.msg || "Login failed");
       }
     } catch (err) {
+      console.error("Login error:", err);
       setError(err.response?.data?.msg || "An error occurred during login");
     } finally {
       setLoading(false);
